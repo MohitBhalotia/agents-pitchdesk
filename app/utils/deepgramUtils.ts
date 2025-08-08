@@ -14,6 +14,8 @@ export const sendMicToSocket = (socket: WebSocket) => (event: AudioProcessingEve
   socket.send(audioDataToSend);
 };
 
+
+
 export const sendSocketMessage = (socket: WebSocket, message: DGMessage) => {
   socket.send(JSON.stringify(message));
 };
@@ -46,7 +48,12 @@ export interface AgentConfig {
 }
 
 export interface SpeakConfig {
-  provider: { type: "deepgram"; model: string };
+  provider: {
+    type: "deepgram";
+    model: string;
+    voice?: string;
+    apiKey?: string;
+  };
 }
 
 export interface StsConfig {

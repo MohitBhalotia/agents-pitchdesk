@@ -44,7 +44,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "app/components/icons/NewTabIcon.js"  ],
   "exclude": [
     "node_modules"
   ],

@@ -8,7 +8,6 @@ import {
 } from "../context/VoiceBotContextProvider";
 import { UserIcon } from "./icons/UserIcon";
 import { AssistantIcon } from "./icons/AssistantIcon";
-import { XMarkIcon } from "./icons/XMarkIcon";
 import Latency from "./Latency";
 import { useSearchParams } from "next/navigation";
 import { latencyMeasurementQueryParam } from "app/lib/constants";
@@ -60,11 +59,9 @@ const isFirstMessageInSpeakerSequence = (
   return isUserMessage(message) !== isUserMessage(previousMessage);
 };
 
-interface Props {
-  toggleConversation: () => void;
-}
 
-function Conversation({ toggleConversation }: Props) {
+
+function Conversation() {
   const { displayOrder } = useVoiceBot();
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -77,20 +74,11 @@ function Conversation({ toggleConversation }: Props) {
 
   return (
     <div
-      className="absolute top-[250px] bottom-[0] left-0 md:left-[20%] w-[100%] md:w-[60%] pt-4 z-10 border border-gray-800 rounded-[1px]"
-      style={{
-        background: "linear-gradient(0deg, #16161A 47.8%, #25252B 99.86%)",
-      }}
+      className="bg-gray-900 shadow-lg overflow-auto h-screen"
     >
       <div className="h-full flex flex-col justify-between">
-        <button
-          aria-label="Close"
-          className="absolute top-0 right-0 mx-4 px-4 py-4 text-gray-350"
-          onClick={toggleConversation}
-        >
-          <XMarkIcon />
-        </button>
-        <div className="flex justify-center py-4 mx-8 text-[14px] text-gray-450">
+        
+        <div className="flex justify-center border-b border-gray-800 shadow-xl py-4 mx-8 text-lg font-bold text-gray-450">
           Conversation transcript:
         </div>
 

@@ -79,6 +79,7 @@ export enum VoiceBotStatus {
   THINKING = "thinking",
   SPEAKING = "speaking",
   SLEEPING = "sleeping",
+  HISTORY = "history",
   NONE = "",
 }
 

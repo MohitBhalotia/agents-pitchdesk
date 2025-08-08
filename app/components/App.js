@@ -11,8 +11,6 @@ import { EventType, useVoiceBot, VoiceBotStatus } from "../context/VoiceBotConte
 import { createAudioBuffer, playAudioBuffer } from "../utils/audioUtils";
 import { sendSocketMessage, sendMicToSocket } from "app/utils/deepgramUtils";
 import { isMobile } from "react-device-detect";
-import { usePrevious } from "@uidotdev/usehooks";
-import { useStsQueryParams } from "app/hooks/UseStsQueryParams";
 import RateLimited from "./RateLimited";
 
 const AnimationManager = dynamic(() => import("./AnimationManager"), {
@@ -44,15 +42,13 @@ export const App = ({
     startMicrophone,
   } = useMicrophone();
   const { socket, connectToDeepgram, socketState, rateLimited } = useDeepgram();
-  const { voice, prompt, applyParamsToConfig } = useStsQueryParams();
   const audioContext = useRef(null);
   const agentVoiceAnalyser = useRef(null);
   const userVoiceAnalyser = useRef(null);
   const startTimeRef = useRef(-1);
   const [data, setData] = useState();
   const [isInitialized, setIsInitialized] = useState(requiresUserActionToInitialize ? false : null);
-  const previousVoice = usePrevious(voice);
-  const previousPrompt = usePrevious(prompt);
+
   const scheduledAudioSources = useRef([]);
   const pathname = usePathname();
 
@@ -137,10 +133,9 @@ export const App = ({
        *  4. Update the app state to the INITIAL listening state.
        */
 
-      const onOpen = () => {
-        const combinedStsConfig = applyParamsToConfig(defaultStsConfig);
+      const onOpen = async () => {
 
-        sendSocketMessage(socket, combinedStsConfig);
+        sendSocketMessage(socket, defaultStsConfig);
         startMicrophone();
         startListening(true);
         if (pathname === "/") {
@@ -250,28 +245,9 @@ export const App = ({
     }
   }, [socket, onMessage]);
 
-  useEffect(() => {
-    if (previousVoice && previousVoice !== voice && socket && socketState === 1) {
-      sendSocketMessage(socket, {
-        type: "UpdateSpeak",
-        speak: {
-          provider: {
-            type: "deepgram",
-            model: voice,
-          },
-        },
-      });
-    }
-  }, [voice, socket, socketState, previousVoice]);
+  
 
-  useEffect(() => {
-    if (previousPrompt !== prompt && socket && socketState === 1) {
-      sendSocketMessage(socket, {
-        type: "UpdatePrompt",
-        prompt: `${defaultStsConfig.agent.think.prompt}\n${prompt}`,
-      });
-    }
-  }, [defaultStsConfig, previousPrompt, prompt, socket, socketState]);
+  
 
   /**
    * Manage responses to incoming data from WebSocket.
@@ -293,7 +269,7 @@ export const App = ({
         /**
          * When the user says something, add it to the conversation queue.
          */
-        if (status !== VoiceBotStatus.SLEEPING) {
+        if (status !== VoiceBotStatus.SLEEPING && data.type !== "History") {
           addVoicebotMessage({ user: userTranscript });
         }
       };
@@ -302,10 +278,13 @@ export const App = ({
        * When the assistant/agent says something, add it to the conversation queue.
        */
       const assistantRole = (data) => {
-        if (status !== VoiceBotStatus.SLEEPING && !isWaitingForUserVoiceAfterSleep.current) {
+        console.log(data);
+        if (status !== VoiceBotStatus.SLEEPING &&  !isWaitingForUserVoiceAfterSleep.current) {
           startSpeaking();
           const assistantTranscript = data.content;
-          addVoicebotMessage({ assistant: assistantTranscript });
+          if(data.type !== "History") {
+            addVoicebotMessage({ assistant: assistantTranscript });
+          }
         }
       };
 
@@ -441,7 +420,7 @@ export const App = ({
             </button>
           )}
           {socketState === 0 && (
-            <div className="text-base text-gray-25 text-center w-full">Loading Deepgram...</div>
+            <div className="text-base text-gray-25 text-center w-full">Loading...</div>
           )}
           {socketState > 0 && status === VoiceBotStatus.SLEEPING && (
             <div className="text-xl flex flex-col items-center justify-center mt-4 mb-10 md:mt-4 md:mb-10">
